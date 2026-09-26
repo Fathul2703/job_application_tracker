@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:job_application_tracker/core/theme/design_tokens.dart';
 import 'package:job_application_tracker/core/theme/theme_context.dart';
 import 'package:job_application_tracker/features/applications/application_query_providers.dart';
 
@@ -57,24 +58,36 @@ class _ApplicationsSearchFieldState
       }
     });
 
-    return SearchBar(
+    // A TextField rather than SearchBar: SearchBar's inner field exposes a
+    // 24px-tall tap target to accessibility services.
+    return TextField(
       controller: _controller,
-      hintText: 'Search company, role or location',
-      leading: const Icon(Icons.search),
-      trailing: [
-        if (_controller.text.isNotEmpty)
-          IconButton(
-            tooltip: 'Clear search',
-            icon: const Icon(Icons.close),
-            onPressed: _clear,
-          ),
-      ],
-      elevation: const WidgetStatePropertyAll(0),
-      backgroundColor: WidgetStatePropertyAll(
-        context.colorScheme.surfaceContainerHigh,
-      ),
       textInputAction: TextInputAction.search,
       onChanged: _onChanged,
+      decoration: InputDecoration(
+        hintText: 'Search company, role or location',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: _controller.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Clear search',
+                icon: const Icon(Icons.close),
+                onPressed: _clear,
+              ),
+        fillColor: context.colorScheme.surfaceContainerHigh,
+        border: const OutlineInputBorder(
+          borderRadius: AppRadius.xlAll,
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.xlAll,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.xlAll,
+          borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+        ),
+      ),
     );
   }
 }

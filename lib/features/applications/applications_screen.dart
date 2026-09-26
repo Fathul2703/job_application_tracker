@@ -35,6 +35,9 @@ class ApplicationsScreen extends ConsumerWidget {
       ),
       floatingActionButton: hasApplications
           ? FloatingActionButton.extended(
+              // Both tabs stay mounted (IndexedStack) and each has a FAB; the
+              // default shared hero tag would clash when pushing a route.
+              heroTag: null,
               onPressed: () => context.push(AppRoutes.newApplication),
               icon: const Icon(Icons.add),
               label: const Text('New'),

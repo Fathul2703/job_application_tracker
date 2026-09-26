@@ -1,0 +1,11 @@
+# Regenerate: flutter test tool/icon/render_icon_test.dart && dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/branding/icon.png
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#4F46E5"
+  adaptive_icon_foreground: assets/branding/icon_foreground.png
+  adaptive_icon_monochrome: assets/branding/icon_monochrome.png
+  # The foreground PNG already includes the safe-zone padding.
+  adaptive_icon_foreground_inset: 0

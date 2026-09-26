@@ -1,0 +1,14 @@
+# Regenerate: dart run flutter_native_splash:create
+# Colors match the app surfaces (AppTheme light/dark `surface`).
+flutter_native_splash:
+  color: "#FCF8FF"
+  color_dark: "#131318"
+  image: assets/branding/splash_logo.png
+  android_12:
+    image: assets/branding/splash_android12.png
+    icon_background_color: "#4F46E5"
+    color: "#FCF8FF"
+    color_dark: "#131318"
+  ios: true
+  android: true
+  web: false
