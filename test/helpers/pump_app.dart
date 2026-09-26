@@ -1,7 +1,11 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:job_application_tracker/app.dart';
+import 'package:job_application_tracker/data/database/app_database.dart';
+import 'package:job_application_tracker/providers/data_providers.dart';
+
+import 'test_database.dart';
 
 /// Common window sizes (logical pixels) for layout tests.
 abstract final class TestSizes {
@@ -11,14 +15,42 @@ abstract final class TestSizes {
 }
 
 extension PumpApp on WidgetTester {
-  /// Pumps the full app inside a fresh [ProviderScope] at [size].
-  Future<void> pumpApp({Size size = TestSizes.phone}) async {
+  /// Pumps the full app at [size] with an in-memory database and a fixed
+  /// clock. [seed] runs against the database before the first frame.
+  Future<AppDatabase> pumpApp({
+    Size size = TestSizes.phone,
+    FakeClock? clock,
+    Future<void> Function(AppDatabase db)? seed,
+  }) async {
     view
       ..physicalSize = size
       ..devicePixelRatio = 1;
     addTearDown(view.reset);
 
-    await pumpWidget(const ProviderScope(child: JobTrackerApp()));
+    final db = createTestDatabase();
+    if (seed != null) await seed(db);
+
+    await pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          clockProvider.overrideWithValue((clock ?? FakeClock.standard()).call),
+        ],
+        child: const JobTrackerApp(),
+      ),
+    );
+    await pumpAndSettle();
+    return db;
+  }
+
+  /// Taps a destination in the bottom navigation bar.
+  Future<void> tapTab(String label) async {
+    await tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text(label),
+      ),
+    );
     await pumpAndSettle();
   }
 }

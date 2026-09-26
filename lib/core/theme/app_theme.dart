@@ -13,11 +13,25 @@ abstract final class AppTheme {
   static final ThemeData dark = _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
-    final colorScheme = ColorScheme.fromSeed(
+    // Calm tonalSpot scheme for surfaces and secondary/tertiary roles, with
+    // the primary roles taken from the fidelity variant so the accent stays
+    // a crisp indigo instead of a muted pastel. Using fidelity for every role
+    // made containers (nav indicator, tonal buttons) overly saturated.
+    final calm = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
       brightness: brightness,
-      // Keeps the primary close to the seed instead of a muted pastel.
+    );
+    final vivid = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: brightness,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+    );
+    final colorScheme = calm.copyWith(
+      primary: vivid.primary,
+      onPrimary: vivid.onPrimary,
+      primaryContainer: vivid.primaryContainer,
+      onPrimaryContainer: vivid.onPrimaryContainer,
+      surfaceTint: vivid.surfaceTint,
     );
     final statusColors = brightness == Brightness.light
         ? StatusColors.light

@@ -1,7 +1,9 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_application_tracker/features/analytics/analytics_screen.dart';
+import 'package:job_application_tracker/features/applications/application_detail_screen.dart';
+import 'package:job_application_tracker/features/applications/application_form_screen.dart';
 import 'package:job_application_tracker/features/applications/applications_screen.dart';
 import 'package:job_application_tracker/features/dashboard/dashboard_screen.dart';
 import 'package:job_application_tracker/features/settings/settings_screen.dart';
@@ -13,6 +15,10 @@ abstract final class AppRoutes {
   static const applications = '/applications';
   static const analytics = '/analytics';
   static const settings = '/settings';
+
+  static const newApplication = '/applications/new';
+  static String applicationDetail(int id) => '/applications/$id';
+  static String editApplication(int id) => '/applications/$id/edit';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -42,6 +48,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.applications,
                 builder: (_, _) => const ApplicationsScreen(),
+                routes: [
+                  // Declared before ':id' so "new" is never parsed as an id.
+                  GoRoute(
+                    path: 'new',
+                    parentNavigatorKey: rootNavigatorKey,
+                    pageBuilder: (_, state) => MaterialPage(
+                      key: state.pageKey,
+                      fullscreenDialog: true,
+                      child: const ApplicationFormScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) =>
+                        ApplicationDetailScreen(applicationId: _idParam(state)),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        parentNavigatorKey: rootNavigatorKey,
+                        pageBuilder: (_, state) => MaterialPage(
+                          key: state.pageKey,
+                          fullscreenDialog: true,
+                          child: EditApplicationScreen(
+                            applicationId: _idParam(state),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -69,3 +105,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
+
+/// Route id parameter; an invalid id maps to -1, which never exists and so
+/// renders the "not found" state.
+int _idParam(GoRouterState state) =>
+    int.tryParse(state.pathParameters['id'] ?? '') ?? -1;

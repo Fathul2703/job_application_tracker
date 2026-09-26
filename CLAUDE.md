@@ -22,6 +22,7 @@ tests matter as much as features.
 | State management / DI | `flutter_riverpod` 3.x — **no code generation** |
 | Navigation | `go_router` (`StatefulShellRoute.indexedStack`) |
 | Database | SQLite via `drift` + `drift_flutter` (native SQLite bundled by `sqlite3` build hooks) |
+| Formatting | `intl` (dates, numbers, currency symbols) |
 | Charts | `fl_chart` *(Phase 8)* |
 
 Add a dependency only in the phase that needs it, and justify it.
@@ -147,9 +148,9 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 | Need | Provider |
 |---|---|
 | Database, repositories (DI) | `Provider` |
-| Reactive reads (lists, detail by id) | `StreamProvider` / `StreamProvider.family` over `repo.watch…()` |
+| Reactive reads (lists, detail by id) | `StreamProvider` / `StreamProvider.autoDispose.family` over `repo.watch…()` (`lib/providers/application_providers.dart`) |
 | UI state (search, filter, sort, theme mode) | `NotifierProvider` |
-| Mutations (save, delete, change status) | `Notifier` / `AsyncNotifier` controller → repository |
+| Mutations (save, delete, change status) | `AsyncNotifier` controller → repository (e.g. `features/applications/application_controllers.dart`). State = last action's loading/error; methods return success so screens can navigate. Guard with `ref.mounted` after awaits. |
 | Derived data (analytics) | `Provider` that combines streams and calls a service |
 
 - Prefer reactive streams over manual `ref.invalidate` after writes.
@@ -170,6 +171,14 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 - Both light and dark themes must look right; respect text scaling; touch targets ≥ 48dp.
 - Design tone: clean, calm, professional. Avoid heavy gradients, glassmorphism and decorative animation. Use motion only to explain change.
 - Small forms (note, checklist item, status change, filters) use bottom sheets; large forms use full-screen routes on the root navigator.
+- Full-screen forms: close (X) on the left, filled **Save** on the right; guard unsaved changes
+  with `PopScope` + "Discard changes?" dialog. Field validators come from the domain draft
+  (e.g. `ApplicationDraft.validateCompany`) so UI and repository share rules.
+- Show repository errors with `errorMessage()` (`lib/shared/error_message.dart`) in a SnackBar.
+- Color scheme: tonalSpot for surfaces/containers, primary roles from the fidelity variant
+  (crisp indigo accent). Don't use saturated containers for large areas.
+- Routes: `/applications`, `/applications/new`, `/applications/:id`, `/applications/:id/edit`
+  (use `AppRoutes.*` helpers).
 
 ## Testing rules
 
@@ -179,6 +188,11 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
   with `FakeClock` for timestamps.
 - Test stream behaviour with one long-lived subscription; don't assume the initial
   query emits before a write.
+- In widget tests (`testWidgets`), never await a Drift **stream** (`watch…().first`): its
+  timers don't run in the fake async zone and the test hangs. Use plain queries
+  (`db.select(...).get()`) for assertions. `ListView` children are built lazily, so
+  `scrollUntilVisible` before finding off-screen widgets.
+- Don't await platform side effects (haptics, etc.) before updating UI; use `unawaited`.
 - `integration_test/` covers what only a device can prove (native SQLite, file database).
   It must only touch records it creates.
 - Screens: widget tests for the main flows, using `test/helpers/pump_app.dart`.
@@ -211,8 +225,8 @@ flutter build ios --simulator --debug
 | 1 | Audit & planning | ✅ |
 | 2 | Foundation: cleanup, IDs, lints, Riverpod, GoRouter, theme/tokens, shell, tests | ✅ |
 | 3 | Data layer: Drift, tables, migrations, models, repositories, seed data | ✅ |
-| 4 | Applications CRUD + status change | ⏳ |
-| 5 | Search, filter, sort | |
+| 4 | Applications CRUD + status change | ✅ |
+| 5 | Search, filter, sort | ⏳ |
 | 6 | Interviews, checklist, notes, status timeline | |
 | 7 | Dashboard | |
 | 8 | Analytics | |
