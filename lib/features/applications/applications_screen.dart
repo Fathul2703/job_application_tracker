@@ -100,6 +100,13 @@ class _EmptyApplications extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loadingDemo = ref.watch(demoDataControllerProvider).isLoading;
+    ref.listen(demoDataControllerProvider, (_, next) {
+      if (next case AsyncError(:final error)) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(errorMessage(error))));
+      }
+    });
 
     return EmptyState(
       icon: Icons.work_outline,
