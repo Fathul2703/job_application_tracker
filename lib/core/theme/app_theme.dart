@@ -86,9 +86,15 @@ abstract final class AppTheme {
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
+      // Badges here count things (e.g. active filters), not errors.
+      badgeTheme: BadgeThemeData(
+        backgroundColor: colorScheme.primary,
+        textColor: colorScheme.onPrimary,
+      ),
       chipTheme: ChipThemeData(
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.smAll),
         side: BorderSide(color: colorScheme.outlineVariant),
+        iconTheme: IconThemeData(color: colorScheme.onSurfaceVariant, size: 18),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

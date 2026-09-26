@@ -12,6 +12,8 @@ Future<ApplicationStatus?> showStatusPicker(
 }) {
   return showModalBottomSheet<ApplicationStatus>(
     context: context,
+    // Covers the navigation bar instead of opening inside the tab.
+    useRootNavigator: true,
     useSafeArea: true,
     isScrollControlled: true,
     builder: (_) => _StatusPickerSheet(current: current),

@@ -6,6 +6,7 @@ import 'package:job_application_tracker/data/database/app_database.dart';
 import 'package:job_application_tracker/domain/enums/application_status.dart';
 import 'package:job_application_tracker/domain/errors.dart';
 import 'package:job_application_tracker/domain/models/application.dart';
+import 'package:job_application_tracker/domain/models/application_query.dart';
 import 'package:job_application_tracker/domain/models/status_change.dart';
 
 /// Reads and writes applications and their status history.
@@ -25,15 +26,60 @@ class ApplicationRepository {
 
   $ApplicationsTable get _table => _db.applications;
 
-  /// All applications, most recently updated first.
-  Stream<List<Application>> watchAll() {
-    final query = _db.select(_table)
-      ..orderBy([
-        (t) => OrderingTerm.desc(t.updatedAt),
-        (t) => OrderingTerm.desc(t.id),
-      ]);
-    return query.watch().map((rows) => rows.map(_toModel).toList());
+  /// Applications matching [query], in its sort order. The default query
+  /// returns everything, most recently updated first.
+  Stream<List<Application>> watchAll({
+    ApplicationQuery query = const ApplicationQuery(),
+  }) {
+    final select = _db.select(_table);
+
+    for (final term in query.searchTerms) {
+      final pattern = '%${_escapeLike(term)}%';
+      select.where(
+        (t) =>
+            t.companyName.like(pattern, escapeChar: _likeEscape) |
+            t.positionTitle.like(pattern, escapeChar: _likeEscape) |
+            t.location.like(pattern, escapeChar: _likeEscape),
+      );
+    }
+    if (query.statuses.isNotEmpty) {
+      select.where((t) => t.status.isInValues(query.statuses));
+    }
+    if (query.workModes.isNotEmpty) {
+      select.where((t) => t.workMode.isInValues(query.workModes));
+    }
+    if (query.employmentTypes.isNotEmpty) {
+      select.where((t) => t.employmentType.isInValues(query.employmentTypes));
+    }
+
+    select.orderBy([
+      ...switch (query.sort) {
+        ApplicationSort.recentlyUpdated =>
+          <OrderClauseGenerator<$ApplicationsTable>>[],
+        ApplicationSort.appliedDate => [
+          (t) => OrderingTerm.desc(t.appliedAt, nulls: NullsOrder.last),
+        ],
+        ApplicationSort.deadline => [
+          (t) => OrderingTerm.asc(t.deadlineAt, nulls: NullsOrder.last),
+        ],
+        ApplicationSort.company => [
+          (t) => OrderingTerm.asc(t.companyName.collate(Collate.noCase)),
+          (t) => OrderingTerm.asc(t.positionTitle.collate(Collate.noCase)),
+        ],
+      },
+      // Stable tie-breakers for every sort.
+      (t) => OrderingTerm.desc(t.updatedAt),
+      (t) => OrderingTerm.desc(t.id),
+    ]);
+
+    return select.watch().map((rows) => rows.map(_toModel).toList());
   }
+
+  static const _likeEscape = r'\';
+
+  /// Makes `%`, `_` and the escape character match literally in LIKE.
+  static String _escapeLike(String term) =>
+      term.replaceAllMapped(RegExp(r'[%_\\]'), (m) => '\\${m[0]}');
 
   Stream<Application?> watchById(int id) {
     final query = _db.select(_table)..where((t) => t.id.equals(id));
