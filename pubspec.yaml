@@ -32,6 +32,15 @@ dev_dependencies:
   build_runner: ^2.16.1
   integration_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    # Inter variable font (OFL, see assets/fonts/OFL.txt). One file covers
+    # every weight via the wght axis.
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
