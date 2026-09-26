@@ -13,6 +13,7 @@ import 'package:job_application_tracker/providers/application_detail_providers.d
 import 'package:job_application_tracker/providers/data_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
 import 'package:job_application_tracker/shared/widgets/confirm_dialog.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/form_fields.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
@@ -37,25 +38,25 @@ class EditInterviewScreen extends ConsumerWidget {
         applicationId: applicationId,
         initial: interview,
       ),
-      AsyncData() => Scaffold(
-        appBar: AppBar(),
-        body: const EmptyState(
+      AsyncData() => const Scaffold(
+        appBar: ContentAppBar(),
+        body: EmptyState(
           icon: Icons.search_off,
           title: 'Interview not found',
           message: 'It may have been deleted.',
         ),
       ),
       AsyncError(:final error) => Scaffold(
-        appBar: AppBar(),
+        appBar: const ContentAppBar(),
         body: EmptyState(
           icon: Icons.error_outline,
           title: 'Could not load interview',
           message: errorMessage(error),
         ),
       ),
-      _ => Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      _ => const Scaffold(
+        appBar: ContentAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       ),
     };
   }
@@ -238,7 +239,7 @@ class _InterviewFormScreenState extends ConsumerState<InterviewFormScreen> {
       canPop: false,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ContentAppBar(
           leading: IconButton(
             tooltip: 'Close',
             icon: const Icon(Icons.close),

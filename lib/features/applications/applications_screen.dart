@@ -15,6 +15,7 @@ import 'package:job_application_tracker/features/applications/widgets/status_fil
 import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/providers/data_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
 
@@ -27,7 +28,7 @@ class ApplicationsScreen extends ConsumerWidget {
     final hasApplications = applications.value?.isNotEmpty ?? false;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: ContentAppBar(
         title: const Text('Applications'),
         actions: hasApplications
             ? const [_SortButton(), _FilterButton(), SizedBox(width: 4)]

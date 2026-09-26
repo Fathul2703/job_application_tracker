@@ -14,6 +14,7 @@ import 'package:job_application_tracker/features/applications/widgets/status_pic
 import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
 import 'package:job_application_tracker/shared/widgets/confirm_dialog.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/form_fields.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
@@ -35,25 +36,25 @@ class EditApplicationScreen extends ConsumerWidget {
         key: ValueKey(app.id),
         initial: app,
       ),
-      AsyncData() => Scaffold(
-        appBar: AppBar(),
-        body: const EmptyState(
+      AsyncData() => const Scaffold(
+        appBar: ContentAppBar(),
+        body: EmptyState(
           icon: Icons.search_off,
           title: 'Application not found',
           message: 'It may have been deleted.',
         ),
       ),
       AsyncError(:final error) => Scaffold(
-        appBar: AppBar(),
+        appBar: const ContentAppBar(),
         body: EmptyState(
           icon: Icons.error_outline,
           title: 'Could not load application',
           message: errorMessage(error),
         ),
       ),
-      _ => Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      _ => const Scaffold(
+        appBar: ContentAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       ),
     };
   }
@@ -209,7 +210,7 @@ class _ApplicationFormScreenState extends ConsumerState<ApplicationFormScreen> {
       canPop: false,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ContentAppBar(
           leading: IconButton(
             tooltip: 'Close',
             icon: const Icon(Icons.close),

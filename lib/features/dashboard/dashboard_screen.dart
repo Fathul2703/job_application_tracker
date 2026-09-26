@@ -14,6 +14,7 @@ import 'package:job_application_tracker/features/dashboard/dashboard_providers.d
 import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/providers/data_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/date_block.dart';
 import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
@@ -33,7 +34,7 @@ class DashboardScreen extends ConsumerWidget {
     final hasApplications = applications.value?.isNotEmpty ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
+      appBar: const ContentAppBar(title: Text('Dashboard')),
       floatingActionButton: hasApplications
           ? FloatingActionButton.extended(
               // Both tabs stay mounted (IndexedStack) and each has a FAB; the
