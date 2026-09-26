@@ -16,6 +16,8 @@ abstract final class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
       brightness: brightness,
+      // Keeps the primary close to the seed instead of a muted pastel.
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
     final statusColors = brightness == Brightness.light
         ? StatusColors.light
