@@ -27,6 +27,10 @@ machine.
 Without `key.properties`, release builds are signed with the debug key so they
 run locally but can't be published.
 
+A universal APK is ~65 MB because it contains native code for three CPU
+architectures. Google Play delivers only the matching slice (~23 MB) from the
+app bundle; for direct installs use `flutter build apk --release --split-per-abi`.
+
 ## iOS
 
 1. Join the Apple Developer Program and open `ios/Runner.xcworkspace` in Xcode.

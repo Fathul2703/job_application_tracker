@@ -221,6 +221,17 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 - Irreversible bulk actions need two steps: a confirm dialog, then
   `showTypeToConfirmDialog` (type DELETE).
 - `AppInfo` (`core/app_info.dart`) must match `version:` in pubspec.yaml (a test checks it).
+- Font: bundled Inter variable font (`assets/fonts`); `FontWeight` drives its `wght`
+  axis. Tracking in `AppTypography` is tuned for Inter.
+- Branding is generated from code: `flutter test tool/icon/render_icon_test.dart`, then
+  `dart run flutter_launcher_icons` and `dart run flutter_native_splash:create`. After
+  running them, check `git diff` on `ios/Runner/Info.plist` and `project.pbxproj` —
+  flutter_launcher_icons has written an invalid `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS`
+  value before; revert unrelated changes.
+- Every `FloatingActionButton` sets `heroTag: null` (tabs stay mounted in an
+  `IndexedStack`; the default shared hero tag throws when pushing a route).
+- `test/widget/accessibility_test.dart` audits tap targets, labels, contrast and 200%
+  text on every main screen — add new screens to it.
 - Reuse `showTextInputSheet` for single-field edits and `showConfirmDialog` before
   destructive actions (except removing a checklist item, which is low-stakes).
 - When a provider re-runs (e.g. a new search), keep showing the previous data: match on
@@ -260,6 +271,7 @@ flutter analyze
 flutter test
 dart run build_runner build                 # after changing Drift tables
 dart run drift_dev make-migrations          # after bumping schemaVersion
+dart format --output=none --set-exit-if-changed lib test tool   # what CI checks
 flutter test integration_test -d <device>   # on-device database smoke test
 flutter run                                 # pick an iOS simulator or Android emulator
 flutter build apk --debug
@@ -283,4 +295,4 @@ flutter build ios --simulator --debug
 | 7 | Dashboard | ✅ |
 | 8 | Analytics | ✅ |
 | 9 | Settings: persisted theme, backup/export/import, clear data | ✅ |
-| 10 | Polish: states, a11y, bundled font, icon & splash, README | ⏳ |
+| 10 | Polish: states, a11y, bundled font, icon & splash, README | ✅ |
