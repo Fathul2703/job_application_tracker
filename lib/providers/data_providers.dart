@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_application_tracker/core/utils/clock.dart';
+import 'package:job_application_tracker/data/backup/backup_service.dart';
 import 'package:job_application_tracker/data/database/app_database.dart';
+import 'package:job_application_tracker/data/files/file_exchange.dart';
 import 'package:job_application_tracker/data/repositories/application_repository.dart';
 import 'package:job_application_tracker/data/repositories/checklist_repository.dart';
 import 'package:job_application_tracker/data/repositories/interview_repository.dart';
@@ -51,4 +53,16 @@ final noteRepositoryProvider = Provider<NoteRepository>(
     ref.watch(appDatabaseProvider),
     clock: ref.watch(clockProvider),
   ),
+);
+
+final backupServiceProvider = Provider<BackupService>(
+  (ref) => BackupService(
+    ref.watch(appDatabaseProvider),
+    clock: ref.watch(clockProvider),
+  ),
+);
+
+/// Share sheet and file picker. Overridden with a fake in tests.
+final fileExchangeProvider = Provider<FileExchange>(
+  (ref) => const PlatformFileExchange(),
 );

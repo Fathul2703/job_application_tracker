@@ -19,3 +19,14 @@ class NotFoundException implements Exception {
   @override
   String toString() => 'NotFoundException: $entity #$id not found';
 }
+
+/// Thrown when a backup file can't be read or restored. [message] is
+/// user-facing.
+class BackupFormatException implements Exception {
+  const BackupFormatException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'BackupFormatException: $message';
+}

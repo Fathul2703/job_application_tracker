@@ -24,6 +24,8 @@ tests matter as much as features.
 | Database | SQLite via `drift` + `drift_flutter` (native SQLite bundled by `sqlite3` build hooks) |
 | Formatting | `intl` (dates, numbers, currency symbols) |
 | Links | `url_launcher` (job postings, meeting links) |
+| Preferences | `shared_preferences` (theme mode) |
+| Files | `share_plus`, `file_picker`, `path_provider` (backup export/restore, CSV) |
 | Charts | `fl_chart` (monthly column chart); simple bars are plain widgets |
 
 Add a dependency only in the phase that needs it, and justify it.
@@ -208,6 +210,17 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 - Analytics numbers come from the pure `Analytics.build` (`domain/services/analytics.dart`)
   implementing the metric definitions below; show every rate with its raw count
   ("73% · 8 of 11").
+- Settings (`features/settings/`): theme is persisted through `SettingsStore`
+  (`data/settings/`, shared_preferences opened in `main` before `runApp`). Backups use
+  `BackupService` (`data/backup/`): explicit versioned JSON (`format`, `version`), date-only
+  as `yyyy-MM-dd`, timestamps as UTC ISO-8601, ids preserved; restore **replaces all data**
+  in one transaction and throws `BackupFormatException` without changing anything on bad
+  input. Bump `BackupService.version` and keep reading older versions if the format changes.
+- File sharing/picking goes through `FileExchange` (`data/files/`); tests use
+  `FakeFileExchange`. Pass the tapped widget's rect as `origin` (required on iPad).
+- Irreversible bulk actions need two steps: a confirm dialog, then
+  `showTypeToConfirmDialog` (type DELETE).
+- `AppInfo` (`core/app_info.dart`) must match `version:` in pubspec.yaml (a test checks it).
 - Reuse `showTextInputSheet` for single-field edits and `showConfirmDialog` before
   destructive actions (except removing a checklist item, which is low-stakes).
 - When a provider re-runs (e.g. a new search), keep showing the previous data: match on
@@ -269,5 +282,5 @@ flutter build ios --simulator --debug
 | 6 | Interviews, checklist, notes (status timeline done in Phase 4) | ✅ |
 | 7 | Dashboard | ✅ |
 | 8 | Analytics | ✅ |
-| 9 | Settings: persisted theme, backup/export/import, clear data | ⏳ |
-| 10 | Polish: states, a11y, bundled font, icon & splash, README | |
+| 9 | Settings: persisted theme, backup/export/import, clear data | ✅ |
+| 10 | Polish: states, a11y, bundled font, icon & splash, README | ⏳ |
