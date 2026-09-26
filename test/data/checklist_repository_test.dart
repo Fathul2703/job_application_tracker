@@ -125,4 +125,47 @@ void main() {
 
     expect(await titles(), ['B']);
   });
+
+  group('linkToInterview', () {
+    late int interviewId;
+
+    setUp(() async {
+      interviewId = await InterviewRepository(db).create(
+        applicationId,
+        InterviewDraft(
+          title: 'HR',
+          format: InterviewFormat.video,
+          scheduledAt: DateTime(2026, 10, 1),
+        ),
+      );
+    });
+
+    test('links and unlinks an item', () async {
+      final id = await repo.add(applicationId, 'Prep');
+
+      await repo.linkToInterview(id, interviewId);
+      var item = (await repo.watchForApplication(applicationId).first).single;
+      expect(item.interviewId, interviewId);
+
+      await repo.linkToInterview(id, null);
+      item = (await repo.watchForApplication(applicationId).first).single;
+      expect(item.interviewId, isNull);
+    });
+
+    test('rejects an interview from another application', () async {
+      final other = await ApplicationRepository(db).create(
+        const ApplicationDraft(companyName: 'Other', positionTitle: 'Dev'),
+      );
+      final id = await repo.add(other, 'Prep');
+
+      expect(repo.linkToInterview(id, interviewId), throwsArgumentError);
+    });
+
+    test('throws NotFoundException for a missing item', () {
+      expect(
+        repo.linkToInterview(99, interviewId),
+        throwsA(isA<NotFoundException>()),
+      );
+    });
+  });
 }

@@ -110,6 +110,31 @@ class InterviewDraft {
   final InterviewOutcome outcome;
   final String? summary;
 
+  @override
+  bool operator ==(Object other) =>
+      other is InterviewDraft &&
+      other.title == title &&
+      other.format == format &&
+      // Same instant, whether stored as UTC or local.
+      other.scheduledAt.isAtSameMomentAs(scheduledAt) &&
+      other.durationMinutes == durationMinutes &&
+      other.location == location &&
+      other.interviewer == interviewer &&
+      other.outcome == outcome &&
+      other.summary == summary;
+
+  @override
+  int get hashCode => Object.hash(
+    title,
+    format,
+    scheduledAt.microsecondsSinceEpoch,
+    durationMinutes,
+    location,
+    interviewer,
+    outcome,
+    summary,
+  );
+
   List<String> validate() {
     final trimmed = title.trim();
     final duration = durationMinutes;

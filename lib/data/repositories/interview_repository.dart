@@ -24,6 +24,14 @@ class InterviewRepository {
     return query.watch().map((rows) => rows.map(_toModel).toList());
   }
 
+  /// One interview, or `null` once it no longer exists.
+  Stream<Interview?> watchById(int id) {
+    final query = _db.select(_table)..where((t) => t.id.equals(id));
+    return query.watchSingleOrNull().map(
+      (row) => row == null ? null : _toModel(row),
+    );
+  }
+
   Future<Interview?> getById(int id) async {
     final row = await (_db.select(
       _table,

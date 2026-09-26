@@ -6,6 +6,7 @@ import 'package:job_application_tracker/features/applications/application_detail
 import 'package:job_application_tracker/features/applications/application_form_screen.dart';
 import 'package:job_application_tracker/features/applications/applications_screen.dart';
 import 'package:job_application_tracker/features/dashboard/dashboard_screen.dart';
+import 'package:job_application_tracker/features/interviews/interview_form_screen.dart';
 import 'package:job_application_tracker/features/settings/settings_screen.dart';
 import 'package:job_application_tracker/features/shell/app_shell.dart';
 
@@ -19,6 +20,10 @@ abstract final class AppRoutes {
   static const newApplication = '/applications/new';
   static String applicationDetail(int id) => '/applications/$id';
   static String editApplication(int id) => '/applications/$id/edit';
+  static String newInterview(int applicationId) =>
+      '/applications/$applicationId/interviews/new';
+  static String editInterview(int applicationId, int interviewId) =>
+      '/applications/$applicationId/interviews/$interviewId/edit';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -65,6 +70,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                         ApplicationDetailScreen(applicationId: _idParam(state)),
                     routes: [
                       GoRoute(
+                        path: 'interviews/new',
+                        parentNavigatorKey: rootNavigatorKey,
+                        pageBuilder: (_, state) => MaterialPage(
+                          key: state.pageKey,
+                          fullscreenDialog: true,
+                          child: InterviewFormScreen(
+                            applicationId: _idParam(state),
+                          ),
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'interviews/:interviewId/edit',
+                        parentNavigatorKey: rootNavigatorKey,
+                        pageBuilder: (_, state) => MaterialPage(
+                          key: state.pageKey,
+                          fullscreenDialog: true,
+                          child: EditInterviewScreen(
+                            applicationId: _idParam(state),
+                            interviewId: _idParam(state, 'interviewId'),
+                          ),
+                        ),
+                      ),
+                      GoRoute(
                         path: 'edit',
                         parentNavigatorKey: rootNavigatorKey,
                         pageBuilder: (_, state) => MaterialPage(
@@ -108,5 +136,5 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 /// Route id parameter; an invalid id maps to -1, which never exists and so
 /// renders the "not found" state.
-int _idParam(GoRouterState state) =>
-    int.tryParse(state.pathParameters['id'] ?? '') ?? -1;
+int _idParam(GoRouterState state, [String name = 'id']) =>
+    int.tryParse(state.pathParameters[name] ?? '') ?? -1;
