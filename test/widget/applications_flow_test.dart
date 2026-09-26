@@ -7,6 +7,7 @@ import 'package:job_application_tracker/domain/enums/application_status.dart';
 import 'package:job_application_tracker/domain/models/application.dart';
 import 'package:job_application_tracker/features/applications/application_detail_screen.dart';
 import 'package:job_application_tracker/features/applications/application_form_screen.dart';
+import 'package:job_application_tracker/features/applications/detail/overview_tab.dart';
 import 'package:job_application_tracker/features/applications/widgets/application_card.dart';
 
 import '../helpers/pump_app.dart';
@@ -194,7 +195,12 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Added as Saved'),
         200,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: find
+            .descendant(
+              of: find.byType(OverviewTab),
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
       // Timeline entry (newest first) plus the snackbar.
       expect(find.text('Moved to Interview'), findsNWidgets(2));

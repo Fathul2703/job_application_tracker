@@ -23,6 +23,7 @@ tests matter as much as features.
 | Navigation | `go_router` (`StatefulShellRoute.indexedStack`) |
 | Database | SQLite via `drift` + `drift_flutter` (native SQLite bundled by `sqlite3` build hooks) |
 | Formatting | `intl` (dates, numbers, currency symbols) |
+| Links | `url_launcher` (job postings, meeting links) |
 | Charts | `fl_chart` *(Phase 8)* |
 
 Add a dependency only in the phase that needs it, and justify it.
@@ -59,7 +60,7 @@ lib/
 │   ├── router/               # app_router.dart (AppRoutes constants + GoRouter provider)
 │   ├── theme/                # design_tokens, app_colors, status_colors, app_typography,
 │   │                         # app_theme, theme_context (BuildContext extensions)
-│   └── utils/                # clock, date_only, strings (pure Dart helpers)
+│   └── utils/                # clock, date_only, strings, formatters
 ├── data/
 │   ├── database/             # app_database.dart, tables.dart, app_database.g.dart
 │   ├── repositories/         # application, interview, checklist, note repositories
@@ -184,6 +185,14 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 - Routes: `/applications`, `/applications/new`, `/applications/:id`, `/applications/:id/edit`
   (use `AppRoutes.*` helpers).
 - Modal bottom sheets use `useRootNavigator: true` so they cover the navigation bar.
+- Application detail = compact header + fixed 4-tab `TabBar` (Overview, Interviews,
+  Checklist, Notes) — tabs must all fit on a 360dp phone; counts are overlaid `Badge`s.
+  Tab widgets live in `features/applications/detail/`; interview form/cards in
+  `features/interviews/`.
+- Open external links only through `openLink()` (`lib/shared/open_link.dart`, url_launcher);
+  it validates http(s) and reports failures in a SnackBar.
+- Reuse `showTextInputSheet` for single-field edits and `showConfirmDialog` before
+  destructive actions (except removing a checklist item, which is low-stakes).
 - When a provider re-runs (e.g. a new search), keep showing the previous data: match on
   `AsyncValue(value: final x?)` instead of `AsyncData` to avoid flashing a spinner.
 
@@ -200,6 +209,12 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
   (`db.select(...).get()`) for assertions. `ListView` children are built lazily, so
   `scrollUntilVisible` before finding off-screen widgets.
 - Don't await platform side effects (haptics, etc.) before updating UI; use `unawaited`.
+- After `enterText`, `pump()` before tapping a button whose enabled state depends on the
+  text (e.g. Save in `showTextInputSheet`).
+- `DateFormat.jm()` puts a narrow no-break space (U+202F) before AM/PM; match times with
+  `\s` in a RegExp, not a plain space.
+- `pumpApp` unmounts the app and closes the database in real async on tear-down, so a
+  failing widget test reports its failure instead of hanging. Keep it that way.
 - `integration_test/` covers what only a device can prove (native SQLite, file database).
   It must only touch records it creates.
 - Screens: widget tests for the main flows, using `test/helpers/pump_app.dart`.
@@ -234,8 +249,8 @@ flutter build ios --simulator --debug
 | 3 | Data layer: Drift, tables, migrations, models, repositories, seed data | ✅ |
 | 4 | Applications CRUD + status change | ✅ |
 | 5 | Search, filter, sort | ✅ |
-| 6 | Interviews, checklist, notes (status timeline done in Phase 4) | ⏳ |
-| 7 | Dashboard | |
+| 6 | Interviews, checklist, notes (status timeline done in Phase 4) | ✅ |
+| 7 | Dashboard | ⏳ |
 | 8 | Analytics | |
 | 9 | Settings: persisted theme, backup/export/import, clear data | |
 | 10 | Polish: states, a11y, bundled font, icon & splash, README | |

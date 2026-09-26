@@ -27,7 +27,12 @@ extension PumpApp on WidgetTester {
       ..devicePixelRatio = 1;
     addTearDown(view.reset);
 
-    final db = createTestDatabase();
+    final db = createTestDatabase(closeOnTearDown: false);
+    // Tear-downs run last-registered first: unmount the app (cancelling its
+    // stream queries), then close the database in real async. Closing inside
+    // the fake async zone can hang when a test fails with streams still open.
+    addTearDown(() => runAsync(db.close));
+    addTearDown(() => pumpWidget(const SizedBox.shrink()));
     if (seed != null) await seed(db);
 
     await pumpWidget(

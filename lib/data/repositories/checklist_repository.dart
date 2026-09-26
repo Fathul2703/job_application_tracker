@@ -62,6 +62,24 @@ class ChecklistRepository {
   Future<void> rename(int id, String title) async =>
       _write(id, ChecklistItemsCompanion(title: Value(_validTitle(title))));
 
+  /// Links the item to an interview of the same application, or unlinks it
+  /// when [interviewId] is `null`.
+  Future<void> linkToInterview(int id, int? interviewId) async {
+    await _db.transaction(() async {
+      final item = await (_db.select(
+        _table,
+      )..where((t) => t.id.equals(id))).getSingleOrNull();
+      if (item == null) throw NotFoundException('Checklist item', id);
+      if (interviewId != null) {
+        await _ensureInterviewBelongsTo(interviewId, item.applicationId);
+      }
+      await _write(
+        id,
+        ChecklistItemsCompanion(interviewId: Value(interviewId)),
+      );
+    });
+  }
+
   Future<void> delete(int id) =>
       (_db.delete(_table)..where((t) => t.id.equals(id))).go();
 

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:job_application_tracker/core/utils/formatters.dart';
 import 'package:job_application_tracker/domain/enums/job_enums.dart';
-import 'package:job_application_tracker/features/applications/widgets/form_fields.dart';
 import 'package:job_application_tracker/shared/widgets/company_avatar.dart';
+import 'package:job_application_tracker/shared/widgets/form_fields.dart';
 
 void main() {
   final now = DateTime(2026, 9, 26, 10, 30);

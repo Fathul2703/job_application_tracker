@@ -3,15 +3,17 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:job_application_tracker/data/database/app_database.dart';
 
-/// A fresh in-memory database, closed automatically after the test.
-AppDatabase createTestDatabase() {
+/// A fresh in-memory database. Closed automatically after the test unless
+/// [closeOnTearDown] is false (widget tests close it themselves, see
+/// `pumpApp`).
+AppDatabase createTestDatabase({bool closeOnTearDown = true}) {
   final db = AppDatabase.forTesting(
     DatabaseConnection(
       NativeDatabase.memory(),
       closeStreamsSynchronously: true,
     ),
   );
-  addTearDown(db.close);
+  if (closeOnTearDown) addTearDown(db.close);
   return db;
 }
 

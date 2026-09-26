@@ -87,9 +87,13 @@ class DemoDataSeeder {
 
         int? upcomingInterviewId;
         for (final interview in demo.interviews) {
-          final scheduledAt = now
-              .add(Duration(days: interview.inDays, hours: 2))
-              .toUtc();
+          // 10:00 local on the interview day.
+          final scheduledAt = DateTime(
+            now.year,
+            now.month,
+            now.day + interview.inDays,
+            10,
+          ).toUtc();
           final id = await _db
               .into(_db.interviews)
               .insert(

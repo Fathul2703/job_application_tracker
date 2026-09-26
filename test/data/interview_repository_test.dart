@@ -125,4 +125,12 @@ void main() {
     final remaining = await checklist.watchForApplication(applicationId).first;
     expect(remaining.map((i) => i.title), ['General']);
   });
+
+  test('watchById emits updates and null after delete', () async {
+    final id = await repo.create(applicationId, draftAt(DateTime(2026, 10, 2)));
+    expect((await repo.watchById(id).first)?.id, id);
+
+    await repo.delete(id);
+    expect(await repo.watchById(id).first, isNull);
+  });
 }
