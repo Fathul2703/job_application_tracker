@@ -2,7 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:job_application_tracker/core/utils/clock.dart';
 import 'package:job_application_tracker/core/utils/strings.dart';
 import 'package:job_application_tracker/data/database/app_database.dart';
+import 'package:job_application_tracker/domain/enums/job_enums.dart';
 import 'package:job_application_tracker/domain/errors.dart';
+import 'package:job_application_tracker/domain/models/dashboard_items.dart';
 import 'package:job_application_tracker/domain/models/interview.dart';
 
 class InterviewRepository {
@@ -22,6 +24,46 @@ class InterviewRepository {
         (t) => OrderingTerm.asc(t.id),
       ]);
     return query.watch().map((rows) => rows.map(_toModel).toList());
+  }
+
+  /// Interviews across all applications scheduled at or after [from] (and
+  /// before [until] when given), earliest first. Cancelled ones are left out.
+  Stream<List<UpcomingInterview>> watchUpcoming({
+    required DateTime from,
+    DateTime? until,
+  }) {
+    final interviews = _db.interviews;
+    final applications = _db.applications;
+    final query =
+        _db.select(interviews).join([
+            innerJoin(
+              applications,
+              applications.id.equalsExp(interviews.applicationId),
+            ),
+          ])
+          ..where(
+            interviews.scheduledAt.isBiggerOrEqualValue(from.toUtc()) &
+                interviews.outcome
+                    .equalsValue(InterviewOutcome.cancelled)
+                    .not(),
+          )
+          ..orderBy([
+            OrderingTerm.asc(interviews.scheduledAt),
+            OrderingTerm.asc(interviews.id),
+          ]);
+    if (until != null) {
+      query.where(interviews.scheduledAt.isSmallerThanValue(until.toUtc()));
+    }
+    return query.watch().map(
+      (rows) => [
+        for (final row in rows)
+          UpcomingInterview(
+            interview: _toModel(row.readTable(interviews)),
+            companyName: row.readTable(applications).companyName,
+            positionTitle: row.readTable(applications).positionTitle,
+          ),
+      ],
+    );
   }
 
   /// One interview, or `null` once it no longer exists.

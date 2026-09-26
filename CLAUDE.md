@@ -191,6 +191,12 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
   `features/interviews/`.
 - Open external links only through `openLink()` (`lib/shared/open_link.dart`, url_launcher);
   it validates http(s) and reports failures in a SnackBar.
+- Dashboard (`features/dashboard/`) is about "what's next": numbers come from the pure
+  `DashboardSummary` (`domain/services/dashboard_summary.dart`); cross-application lists use
+  joined queries (`InterviewRepository.watchUpcoming`, `ApplicationRepository.watchRecentActivity`)
+  returning `UpcomingInterview` / `RecentStatusChange`. Rates belong to Analytics, not here.
+- Simple charts (e.g. `PipelineBar`) are plain widgets; give them a `Semantics` label that
+  reads the numbers, and test their rendered size, not just their labels.
 - Reuse `showTextInputSheet` for single-field edits and `showConfirmDialog` before
   destructive actions (except removing a checklist item, which is low-stakes).
 - When a provider re-runs (e.g. a new search), keep showing the previous data: match on
@@ -250,7 +256,7 @@ flutter build ios --simulator --debug
 | 4 | Applications CRUD + status change | ✅ |
 | 5 | Search, filter, sort | ✅ |
 | 6 | Interviews, checklist, notes (status timeline done in Phase 4) | ✅ |
-| 7 | Dashboard | ⏳ |
-| 8 | Analytics | |
+| 7 | Dashboard | ✅ |
+| 8 | Analytics | ⏳ |
 | 9 | Settings: persisted theme, backup/export/import, clear data | |
 | 10 | Polish: states, a11y, bundled font, icon & splash, README | |
