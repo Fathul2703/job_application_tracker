@@ -9,6 +9,7 @@ import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/providers/theme_mode_provider.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
 import 'package:job_application_tracker/shared/widgets/confirm_dialog.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
 import 'package:job_application_tracker/shared/widgets/section_header.dart';
 import 'package:job_application_tracker/shared/widgets/type_to_confirm_dialog.dart';
@@ -25,7 +26,7 @@ class SettingsScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: const ContentAppBar(title: Text('Settings')),
       body: MaxWidthContent(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(

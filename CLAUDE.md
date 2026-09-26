@@ -174,7 +174,9 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 - Application status is shown with **color + icon/label**, never color alone.
 - Every list/screen has empty, loading and error states (`EmptyState` widget).
 - Adaptive layout: `NavigationBar` < 600dp, `NavigationRail` ≥ 600dp (extended ≥ 840dp).
-  Page content is capped with `MaxWidthContent` (640dp).
+  Page content is capped with `MaxWidthContent` (640dp). Screens use `ContentAppBar`
+  (not `AppBar`) so the title, back button and actions line up with that column on
+  tablets; on phones it looks like a plain AppBar.
 - Both light and dark themes must look right; respect text scaling; touch targets ≥ 48dp.
 - Design tone: clean, calm, professional. Avoid heavy gradients, glassmorphism and decorative animation. Use motion only to explain change.
 - Small forms (note, checklist item, status change, filters) use bottom sheets; large forms use full-screen routes on the root navigator.

@@ -19,6 +19,7 @@ import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
 import 'package:job_application_tracker/shared/widgets/company_avatar.dart';
 import 'package:job_application_tracker/shared/widgets/confirm_dialog.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
 import 'package:job_application_tracker/shared/widgets/status_chip.dart';
@@ -92,7 +93,7 @@ class _ApplicationDetailScreenState
       AsyncData(value: final app?) => _buildDetail(app),
       AsyncData() when _deleting => const Scaffold(),
       AsyncData() => Scaffold(
-        appBar: AppBar(),
+        appBar: const ContentAppBar(),
         body: EmptyState(
           icon: Icons.search_off,
           title: 'Application not found',
@@ -104,16 +105,16 @@ class _ApplicationDetailScreenState
         ),
       ),
       AsyncError(:final error) => Scaffold(
-        appBar: AppBar(),
+        appBar: const ContentAppBar(),
         body: EmptyState(
           icon: Icons.error_outline,
           title: 'Could not load application',
           message: errorMessage(error),
         ),
       ),
-      _ => Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      _ => const Scaffold(
+        appBar: ContentAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       ),
     };
   }
@@ -131,7 +132,7 @@ class _ApplicationDetailScreenState
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ContentAppBar(
           actions: [
             IconButton(
               tooltip: 'Edit',

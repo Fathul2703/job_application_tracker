@@ -10,6 +10,7 @@ import 'package:job_application_tracker/features/analytics/widgets/monthly_table
 import 'package:job_application_tracker/features/applications/widgets/no_applications_state.dart';
 import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
+import 'package:job_application_tracker/shared/widgets/content_app_bar.dart';
 import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
 import 'package:job_application_tracker/shared/widgets/section_header.dart';
@@ -28,7 +29,7 @@ class AnalyticsScreen extends ConsumerWidget {
     final report = ref.watch(analyticsReportProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics')),
+      appBar: const ContentAppBar(title: Text('Analytics')),
       body: switch (report) {
         AsyncValue(value: _?) when !hasApplications =>
           const NoApplicationsState(),
