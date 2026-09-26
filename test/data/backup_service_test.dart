@@ -52,7 +52,11 @@ void main() {
     final json = jsonDecode(await backup.exportJson()) as Map<String, Object?>;
     expect(json['format'], BackupService.format);
     expect(json['version'], BackupService.version);
-    expect(json['exportedAt'], '2026-09-26T03:30:00.000Z');
+    // Independent of the machine's time zone (CI runs in UTC).
+    expect(
+      json['exportedAt'],
+      FakeClock.standard().now.toUtc().toIso8601String(),
+    );
 
     final first = (json['applications']! as List).first as Map;
     expect(first['appliedAt'], matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')));

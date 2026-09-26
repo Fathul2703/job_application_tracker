@@ -38,3 +38,10 @@ jobs:
 
       - name: Test
         run: flutter test
+
+      # The runner is UTC; re-run the date-heavy tests behind UTC so
+      # time-zone assumptions (e.g. date-only values shifting a day) fail here.
+      - name: Test in another time zone
+        run: flutter test test/unit test/data
+        env:
+          TZ: America/Los_Angeles

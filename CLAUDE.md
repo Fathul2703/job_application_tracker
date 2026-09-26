@@ -261,7 +261,9 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 - `integration_test/` covers what only a device can prove (native SQLite, file database).
   It must only touch records it creates.
 - Screens: widget tests for the main flows, using `test/helpers/pump_app.dart`.
-- Tests must not depend on the real clock; inject time where needed.
+- Tests must not depend on the real clock **or the machine's time zone**; inject time
+  and derive expected UTC values from it (CI runs in UTC and again in
+  America/Los_Angeles). Check locally with `TZ=UTC flutter test`.
 - `flutter analyze` and `flutter test` must pass before any commit.
 
 ## Important commands
