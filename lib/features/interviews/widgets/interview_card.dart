@@ -6,6 +6,7 @@ import 'package:job_application_tracker/core/utils/formatters.dart';
 import 'package:job_application_tracker/domain/models/interview.dart';
 import 'package:job_application_tracker/features/interviews/widgets/interview_visuals.dart';
 import 'package:job_application_tracker/shared/open_link.dart';
+import 'package:job_application_tracker/shared/widgets/date_block.dart';
 
 /// One interview: date block, title, time, where, who and prep progress.
 class InterviewCard extends StatelessWidget {
@@ -59,7 +60,7 @@ class InterviewCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DateBlock(start),
+              DateBlock(start),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -116,41 +117,6 @@ class InterviewCard extends StatelessWidget {
                       ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DateBlock extends StatelessWidget {
-  const _DateBlock(this.date);
-
-  final DateTime date;
-
-  @override
-  Widget build(BuildContext context) {
-    final primary = context.colorScheme.primary;
-    return SizedBox(
-      width: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: primary.withValues(alpha: 0.1),
-          borderRadius: AppRadius.mdAll,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          child: Column(
-            children: [
-              Text(
-                DateFormat.MMM().format(date).toUpperCase(),
-                style: context.textTheme.labelSmall?.copyWith(color: primary),
-              ),
-              Text(
-                '${date.day}',
-                style: context.textTheme.titleLarge?.copyWith(color: primary),
               ),
             ],
           ),

@@ -28,6 +28,17 @@ abstract final class Formatters {
     return '${_date.format(local)} · ${_time.format(local)}';
   }
 
+  /// Compact age of a UTC timestamp: "just now", "5m ago", "3h ago",
+  /// "2d ago", then a short date.
+  static String timeAgo(DateTime utc, {required DateTime now}) {
+    final elapsed = now.difference(utc);
+    if (elapsed.inMinutes < 1) return 'just now';
+    if (elapsed.inHours < 1) return '${elapsed.inMinutes}m ago';
+    if (elapsed.inDays < 1) return '${elapsed.inHours}h ago';
+    if (elapsed.inDays < 7) return '${elapsed.inDays}d ago';
+    return shortDate(utc.toLocal(), now: now);
+  }
+
   /// Whole calendar days from today to [dateOnly]; negative for the past.
   static int daysFromToday(DateTime dateOnly, {required DateTime now}) =>
       dateOnly.toDateOnly().difference(now.toDateOnly()).inDays;

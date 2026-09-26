@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,11 +6,11 @@ import 'package:job_application_tracker/core/theme/design_tokens.dart';
 import 'package:job_application_tracker/core/theme/theme_context.dart';
 import 'package:job_application_tracker/domain/models/application.dart';
 import 'package:job_application_tracker/domain/models/application_query.dart';
-import 'package:job_application_tracker/features/applications/application_controllers.dart';
 import 'package:job_application_tracker/features/applications/application_query_providers.dart';
 import 'package:job_application_tracker/features/applications/widgets/application_card.dart';
 import 'package:job_application_tracker/features/applications/widgets/application_filter_sheet.dart';
 import 'package:job_application_tracker/features/applications/widgets/applications_search_field.dart';
+import 'package:job_application_tracker/features/applications/widgets/no_applications_state.dart';
 import 'package:job_application_tracker/features/applications/widgets/status_filter_bar.dart';
 import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/providers/data_providers.dart';
@@ -43,7 +42,7 @@ class ApplicationsScreen extends ConsumerWidget {
           : null,
       body: switch (applications) {
         AsyncValue(value: final list?) when list.isEmpty =>
-          const _EmptyApplications(),
+          const NoApplicationsState(),
         AsyncValue(value: final list?) => _SearchableApplications(list),
         AsyncError(:final error) => EmptyState(
           icon: Icons.error_outline,
@@ -251,50 +250,6 @@ class _NoMatches extends ConsumerWidget {
       action: OutlinedButton(
         onPressed: ref.read(applicationQueryProvider.notifier).clearAll,
         child: const Text('Clear search and filters'),
-      ),
-    );
-  }
-}
-
-class _EmptyApplications extends ConsumerWidget {
-  const _EmptyApplications();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final loadingDemo = ref.watch(demoDataControllerProvider).isLoading;
-    ref.listen(demoDataControllerProvider, (_, next) {
-      if (next case AsyncError(:final error)) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(errorMessage(error))));
-      }
-    });
-
-    return EmptyState(
-      icon: Icons.work_outline,
-      title: 'No applications yet',
-      message:
-          'Track every role you save or apply for, from first click to '
-          'final offer.',
-      action: Column(
-        children: [
-          FilledButton.icon(
-            onPressed: () => context.push(AppRoutes.newApplication),
-            icon: const Icon(Icons.add),
-            label: const Text('Add application'),
-          ),
-          // Development aid for trying the app and taking screenshots.
-          if (kDebugMode) ...[
-            const SizedBox(height: AppSpacing.xs),
-            TextButton.icon(
-              onPressed: loadingDemo
-                  ? null
-                  : () => ref.read(demoDataControllerProvider.notifier).load(),
-              icon: const Icon(Icons.auto_awesome_outlined),
-              label: const Text('Load demo data'),
-            ),
-          ],
-        ],
       ),
     );
   }

@@ -20,6 +20,17 @@ void main() {
       );
     });
 
+    test('timeAgo', () {
+      String ago(Duration d) =>
+          Formatters.timeAgo(now.subtract(d).toUtc(), now: now);
+
+      expect(ago(const Duration(seconds: 20)), 'just now');
+      expect(ago(const Duration(minutes: 5)), '5m ago');
+      expect(ago(const Duration(hours: 3)), '3h ago');
+      expect(ago(const Duration(days: 2)), '2d ago');
+      expect(ago(const Duration(days: 10)), 'Sep 16');
+    });
+
     test('relativeDay', () {
       String rel(int y, int m, int d) =>
           Formatters.relativeDay(DateTime.utc(y, m, d), now: now);

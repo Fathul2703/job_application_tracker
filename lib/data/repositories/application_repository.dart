@@ -7,6 +7,7 @@ import 'package:job_application_tracker/domain/enums/application_status.dart';
 import 'package:job_application_tracker/domain/errors.dart';
 import 'package:job_application_tracker/domain/models/application.dart';
 import 'package:job_application_tracker/domain/models/application_query.dart';
+import 'package:job_application_tracker/domain/models/dashboard_items.dart';
 import 'package:job_application_tracker/domain/models/status_change.dart';
 
 /// Reads and writes applications and their status history.
@@ -104,6 +105,30 @@ class ApplicationRepository {
         (t) => OrderingTerm.asc(t.id),
       ]);
     return query.watch().map((rows) => rows.map(_toStatusChange).toList());
+  }
+
+  /// The latest status changes across all applications, newest first.
+  Stream<List<RecentStatusChange>> watchRecentActivity({int limit = 5}) {
+    final history = _db.statusHistory;
+    final query =
+        _db.select(history).join([
+            innerJoin(_table, _table.id.equalsExp(history.applicationId)),
+          ])
+          ..orderBy([
+            OrderingTerm.desc(history.changedAt),
+            OrderingTerm.desc(history.id),
+          ])
+          ..limit(limit);
+    return query.watch().map(
+      (rows) => [
+        for (final row in rows)
+          RecentStatusChange(
+            change: _toStatusChange(row.readTable(history)),
+            companyName: row.readTable(_table).companyName,
+            positionTitle: row.readTable(_table).positionTitle,
+          ),
+      ],
+    );
   }
 
   /// Creates an application and records its initial status.
