@@ -5,6 +5,7 @@ import 'package:job_application_tracker/data/repositories/application_repository
 import 'package:job_application_tracker/data/repositories/checklist_repository.dart';
 import 'package:job_application_tracker/data/repositories/interview_repository.dart';
 import 'package:job_application_tracker/data/repositories/note_repository.dart';
+import 'package:job_application_tracker/data/seed/demo_data_seeder.dart';
 
 /// Current time. Override in tests for deterministic timestamps.
 final clockProvider = Provider<Clock>((ref) => DateTime.now);
@@ -33,6 +34,13 @@ final interviewRepositoryProvider = Provider<InterviewRepository>(
 
 final checklistRepositoryProvider = Provider<ChecklistRepository>(
   (ref) => ChecklistRepository(
+    ref.watch(appDatabaseProvider),
+    clock: ref.watch(clockProvider),
+  ),
+);
+
+final demoDataSeederProvider = Provider<DemoDataSeeder>(
+  (ref) => DemoDataSeeder(
     ref.watch(appDatabaseProvider),
     clock: ref.watch(clockProvider),
   ),

@@ -146,24 +146,90 @@ class ApplicationDraft {
   final DateTime? deadlineAt;
 
   /// Returns human-readable problems, or an empty list when valid.
-  List<String> validate() {
-    final company = companyName.trim();
-    final position = positionTitle.trim();
-    final min = salaryMin;
-    final max = salaryMax;
-    return [
-      if (company.isEmpty) 'Company is required.',
-      if (company.length > maxTextLength)
-        'Company must be at most $maxTextLength characters.',
-      if (position.isEmpty) 'Position is required.',
-      if (position.length > maxTextLength)
-        'Position must be at most $maxTextLength characters.',
-      if ((min != null && min < 0) || (max != null && max < 0))
-        'Salary cannot be negative.',
-      if (min != null && max != null && min > max)
-        'Minimum salary cannot exceed maximum salary.',
-      if (!RegExp(r'^[A-Z]{3}$').hasMatch(salaryCurrency))
-        'Currency must be a 3-letter ISO code.',
-    ];
+  ///
+  /// Built from the per-field validators below, which forms reuse so the UI
+  /// and the repository apply exactly the same rules.
+  List<String> validate() => [
+    ?validateCompany(companyName),
+    ?validatePosition(positionTitle),
+    ?validateSalaryRange(salaryMin, salaryMax),
+    ?validateCurrency(salaryCurrency),
+    ?validateJobUrl(jobUrl),
+  ];
+
+  static String? validateCompany(String value) =>
+      _requiredText(value, 'Company');
+
+  static String? validatePosition(String value) =>
+      _requiredText(value, 'Position');
+
+  static String? validateSalaryRange(int? min, int? max) {
+    if ((min != null && min < 0) || (max != null && max < 0)) {
+      return 'Salary cannot be negative.';
+    }
+    if (min != null && max != null && min > max) {
+      return 'Minimum salary cannot exceed maximum salary.';
+    }
+    return null;
   }
+
+  static String? validateCurrency(String value) =>
+      RegExp(r'^[A-Z]{3}$').hasMatch(value)
+      ? null
+      : 'Currency must be a 3-letter code, e.g. IDR.';
+
+  /// Optional; when present it must be an absolute http(s) link.
+  static String? validateJobUrl(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return null;
+    final uri = Uri.tryParse(trimmed);
+    final valid =
+        uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+    return valid ? null : 'Enter a full link starting with https://';
+  }
+
+  static String? _requiredText(String value, String field) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return '$field is required.';
+    if (trimmed.length > maxTextLength) {
+      return '$field must be at most $maxTextLength characters.';
+    }
+    return null;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is ApplicationDraft &&
+      other.companyName == companyName &&
+      other.positionTitle == positionTitle &&
+      other.location == location &&
+      other.workMode == workMode &&
+      other.employmentType == employmentType &&
+      other.salaryMin == salaryMin &&
+      other.salaryMax == salaryMax &&
+      other.salaryCurrency == salaryCurrency &&
+      other.salaryPeriod == salaryPeriod &&
+      other.jobUrl == jobUrl &&
+      other.status == status &&
+      other.appliedAt == appliedAt &&
+      other.deadlineAt == deadlineAt;
+
+  @override
+  int get hashCode => Object.hash(
+    companyName,
+    positionTitle,
+    location,
+    workMode,
+    employmentType,
+    salaryMin,
+    salaryMax,
+    salaryCurrency,
+    salaryPeriod,
+    jobUrl,
+    status,
+    appliedAt,
+    deadlineAt,
+  );
 }
