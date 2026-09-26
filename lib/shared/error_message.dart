@@ -4,5 +4,6 @@ import 'package:job_application_tracker/domain/errors.dart';
 String errorMessage(Object error) => switch (error) {
   ValidationException(:final problems) => problems.join('\n'),
   NotFoundException() => 'This item no longer exists.',
+  BackupFormatException(:final message) => message,
   _ => 'Something went wrong. Please try again.',
 };

@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:job_application_tracker/app.dart';
 import 'package:job_application_tracker/data/database/app_database.dart';
+import 'package:job_application_tracker/data/files/file_exchange.dart';
+import 'package:job_application_tracker/data/settings/settings_store.dart';
 import 'package:job_application_tracker/providers/data_providers.dart';
+import 'package:job_application_tracker/providers/theme_mode_provider.dart';
+
+import 'fakes.dart';
 
 import 'test_database.dart';
 
@@ -21,6 +26,8 @@ extension PumpApp on WidgetTester {
     Size size = TestSizes.phone,
     FakeClock? clock,
     Future<void> Function(AppDatabase db)? seed,
+    SettingsStore? settings,
+    FileExchange? files,
   }) async {
     view
       ..physicalSize = size
@@ -40,6 +47,10 @@ extension PumpApp on WidgetTester {
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
           clockProvider.overrideWithValue((clock ?? FakeClock.standard()).call),
+          settingsStoreProvider.overrideWithValue(
+            settings ?? InMemorySettingsStore(),
+          ),
+          fileExchangeProvider.overrideWithValue(files ?? FakeFileExchange()),
         ],
         child: const JobTrackerApp(),
       ),
