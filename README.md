@@ -1,5 +1,9 @@
 # Job Tracker
 
+[![CI](https://github.com/Fathul2703/job_application_tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/Fathul2703/job_application_tracker/actions/workflows/ci.yml)
+![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
+![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android-4F46E5)
+
 A personal, local-first mobile app for running a job search: every application,
 its status history, interviews, preparation checklist and notes — plus a
 dashboard for what's next and analytics that are actually computed from your data.
