@@ -126,6 +126,10 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
   Mutation methods are `async`, so errors always arrive through the returned `Future`.
 - Text is trimmed; blank optional text is stored as `NULL`.
 - SQL and Drift APIs are only used inside `lib/data/`.
+- Search, filter and sort run in SQL (`ApplicationRepository.watchAll(query:)` with
+  `ApplicationQuery` from `lib/domain/models/application_query.dart`). Escape user input
+  used in `LIKE` so `%` and `_` match literally. Always end `ORDER BY` with stable
+  tie-breakers (`updated_at DESC, id DESC`).
 - Any schema change: edit `tables.dart`, bump `schemaVersion`, run build_runner, then
   `dart run drift_dev make-migrations` (writes the schema dump, step-by-step helpers and
   migration tests), implement `onUpgrade`, and make the generated tests pass.
@@ -179,6 +183,9 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
   (crisp indigo accent). Don't use saturated containers for large areas.
 - Routes: `/applications`, `/applications/new`, `/applications/:id`, `/applications/:id/edit`
   (use `AppRoutes.*` helpers).
+- Modal bottom sheets use `useRootNavigator: true` so they cover the navigation bar.
+- When a provider re-runs (e.g. a new search), keep showing the previous data: match on
+  `AsyncValue(value: final x?)` instead of `AsyncData` to avoid flashing a spinner.
 
 ## Testing rules
 
@@ -226,8 +233,8 @@ flutter build ios --simulator --debug
 | 2 | Foundation: cleanup, IDs, lints, Riverpod, GoRouter, theme/tokens, shell, tests | ✅ |
 | 3 | Data layer: Drift, tables, migrations, models, repositories, seed data | ✅ |
 | 4 | Applications CRUD + status change | ✅ |
-| 5 | Search, filter, sort | ⏳ |
-| 6 | Interviews, checklist, notes, status timeline | |
+| 5 | Search, filter, sort | ✅ |
+| 6 | Interviews, checklist, notes (status timeline done in Phase 4) | ⏳ |
 | 7 | Dashboard | |
 | 8 | Analytics | |
 | 9 | Settings: persisted theme, backup/export/import, clear data | |
