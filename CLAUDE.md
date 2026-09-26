@@ -24,7 +24,7 @@ tests matter as much as features.
 | Database | SQLite via `drift` + `drift_flutter` (native SQLite bundled by `sqlite3` build hooks) |
 | Formatting | `intl` (dates, numbers, currency symbols) |
 | Links | `url_launcher` (job postings, meeting links) |
-| Charts | `fl_chart` *(Phase 8)* |
+| Charts | `fl_chart` (monthly column chart); simple bars are plain widgets |
 
 Add a dependency only in the phase that needs it, and justify it.
 Do **not** add: freezed, json_serializable, riverpod_generator, get_it, dio/http,
@@ -195,8 +195,19 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
   `DashboardSummary` (`domain/services/dashboard_summary.dart`); cross-application lists use
   joined queries (`InterviewRepository.watchUpcoming`, `ApplicationRepository.watchRecentActivity`)
   returning `UpcomingInterview` / `RecentStatusChange`. Rates belong to Analytics, not here.
-- Simple charts (e.g. `PipelineBar`) are plain widgets; give them a `Semantics` label that
-  reads the numbers, and test their rendered size, not just their labels.
+- Charts follow the dataviz skill: pick the form first, one axis, thin marks (≤ 24px, 4px
+  rounded data end, square baseline), 2px surface gap between stacked segments, hairline
+  grid, legend for ≥ 2 series, tooltip on touch, a table view, and a `Semantics` label that
+  reads the numbers. Test rendered size, not just labels.
+- **Run the palette validator before shipping chart colors** (dataviz skill:
+  `scripts/validate_palette.js`, `--ordinal` for steps of one hue). Chart-only tokens live
+  in `ChartColors` (`core/theme/chart_colors.dart`).
+- The status palette is for text-on-tint chips (always with icon + label). It fails
+  categorical chart checks, so never use it as the only identity of chart marks — use
+  `StatusBreakdown` (labelled rows, single-hue bars) instead of a multi-color stacked bar.
+- Analytics numbers come from the pure `Analytics.build` (`domain/services/analytics.dart`)
+  implementing the metric definitions below; show every rate with its raw count
+  ("73% · 8 of 11").
 - Reuse `showTextInputSheet` for single-field edits and `showConfirmDialog` before
   destructive actions (except removing a checklist item, which is low-stakes).
 - When a provider re-runs (e.g. a new search), keep showing the previous data: match on
@@ -257,6 +268,6 @@ flutter build ios --simulator --debug
 | 5 | Search, filter, sort | ✅ |
 | 6 | Interviews, checklist, notes (status timeline done in Phase 4) | ✅ |
 | 7 | Dashboard | ✅ |
-| 8 | Analytics | ⏳ |
-| 9 | Settings: persisted theme, backup/export/import, clear data | |
+| 8 | Analytics | ✅ |
+| 9 | Settings: persisted theme, backup/export/import, clear data | ⏳ |
 | 10 | Polish: states, a11y, bundled font, icon & splash, README | |

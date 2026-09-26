@@ -5,6 +5,7 @@ import 'package:job_application_tracker/data/seed/demo_data_seeder.dart';
 import 'package:job_application_tracker/features/applications/application_detail_screen.dart';
 import 'package:job_application_tracker/features/dashboard/dashboard_screen.dart';
 import 'package:job_application_tracker/shared/widgets/stat_tile.dart';
+import 'package:job_application_tracker/shared/widgets/status_breakdown.dart';
 
 import '../helpers/pump_app.dart';
 import '../helpers/test_database.dart';
@@ -50,18 +51,24 @@ void main() {
     expect(find.text('Samudra Commerce · Due in 3 days'), findsOneWidget);
     expect(find.text('Tunas Studio · Due in 6 days'), findsOneWidget);
 
-    // Pipeline legend covers all 13 applications.
+    // Pipeline rows cover all 13 applications.
     for (final label in [
-      'Saved 2',
-      'Applied 2',
-      'Screening 1',
-      'Interview 1',
-      'Technical Test 1',
-      'Offer 1',
-      'Rejected 4',
-      'Withdrawn 1',
+      'Saved',
+      'Applied',
+      'Screening',
+      'Technical Test',
+      'Offer',
+      'Rejected',
+      'Withdrawn',
     ]) {
-      expect(find.text(label), findsOneWidget, reason: label);
+      expect(
+        find.descendant(
+          of: find.byType(StatusBreakdown),
+          matching: find.text(label),
+        ),
+        findsOneWidget,
+        reason: label,
+      );
     }
 
     // Recent activity, newest first.

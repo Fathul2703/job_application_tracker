@@ -88,4 +88,43 @@ void main() {
     expect(activity.first.companyName, 'Rimba');
     expect(activity.first.positionTitle, 'Backend');
   });
+
+  test('watchAllStatusHistory returns every change, oldest first', () async {
+    final a = await applications.create(
+      const ApplicationDraft(companyName: 'A', positionTitle: 'Dev'),
+    );
+    clock.advance(const Duration(hours: 1));
+    final b = await applications.create(
+      const ApplicationDraft(companyName: 'B', positionTitle: 'Dev'),
+    );
+    clock.advance(const Duration(hours: 1));
+    await applications.changeStatus(a, ApplicationStatus.applied);
+
+    final history = await applications.watchAllStatusHistory().first;
+    expect(history.map((c) => (c.applicationId, c.toStatus)), [
+      (a, ApplicationStatus.saved),
+      (b, ApplicationStatus.saved),
+      (a, ApplicationStatus.applied),
+    ]);
+  });
+
+  test('watchApplicationIdsWithInterviews ignores cancelled ones', () async {
+    final a = await applications.create(
+      const ApplicationDraft(companyName: 'A', positionTitle: 'Dev'),
+    );
+    final b = await applications.create(
+      const ApplicationDraft(companyName: 'B', positionTitle: 'Dev'),
+    );
+    await applications.create(
+      const ApplicationDraft(companyName: 'C', positionTitle: 'Dev'),
+    );
+    await interviews.create(a, at(DateTime(2026, 9, 20)));
+    await interviews.create(a, at(DateTime(2026, 9, 22)));
+    await interviews.create(
+      b,
+      at(DateTime(2026, 9, 21), outcome: InterviewOutcome.cancelled),
+    );
+
+    expect(await interviews.watchApplicationIdsWithInterviews().first, {a});
+  });
 }

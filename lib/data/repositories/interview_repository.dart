@@ -66,6 +66,16 @@ class InterviewRepository {
     );
   }
 
+  /// Ids of applications with at least one interview that wasn't cancelled.
+  Stream<Set<int>> watchApplicationIdsWithInterviews() {
+    final query = _db.selectOnly(_table, distinct: true)
+      ..addColumns([_table.applicationId])
+      ..where(_table.outcome.equalsValue(InterviewOutcome.cancelled).not());
+    return query.watch().map(
+      (rows) => {for (final row in rows) row.read(_table.applicationId)!},
+    );
+  }
+
   /// One interview, or `null` once it no longer exists.
   Stream<Interview?> watchById(int id) {
     final query = _db.select(_table)..where((t) => t.id.equals(id));
