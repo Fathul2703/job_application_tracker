@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:job_application_tracker/core/theme/app_typography.dart';
 import 'package:job_application_tracker/core/theme/design_tokens.dart';
 import 'package:job_application_tracker/core/theme/theme_context.dart';
 
@@ -47,7 +46,7 @@ class StatTile extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
-              Text(value, style: context.textTheme.headlineMedium?.tabular),
+              Text(value, style: context.textTheme.headlineMedium),
               if (caption != null)
                 Text(
                   caption!,

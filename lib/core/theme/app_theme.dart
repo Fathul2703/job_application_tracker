@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:job_application_tracker/core/theme/app_colors.dart';
 import 'package:job_application_tracker/core/theme/app_typography.dart';
+import 'package:job_application_tracker/core/theme/chart_colors.dart';
 import 'package:job_application_tracker/core/theme/design_tokens.dart';
 import 'package:job_application_tracker/core/theme/status_colors.dart';
 
@@ -45,7 +46,13 @@ abstract final class AppTheme {
       fontFamily: AppTypography.fontFamily,
       textTheme: AppTypography.textTheme,
       scaffoldBackgroundColor: colorScheme.surface,
-      extensions: [statusColors],
+      extensions: [
+        statusColors,
+        if (brightness == Brightness.light)
+          ChartColors.light
+        else
+          ChartColors.dark,
+      ],
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,

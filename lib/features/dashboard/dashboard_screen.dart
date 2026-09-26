@@ -11,7 +11,6 @@ import 'package:job_application_tracker/domain/models/dashboard_items.dart';
 import 'package:job_application_tracker/domain/services/dashboard_summary.dart';
 import 'package:job_application_tracker/features/applications/widgets/no_applications_state.dart';
 import 'package:job_application_tracker/features/dashboard/dashboard_providers.dart';
-import 'package:job_application_tracker/features/dashboard/widgets/pipeline_bar.dart';
 import 'package:job_application_tracker/providers/application_providers.dart';
 import 'package:job_application_tracker/providers/data_providers.dart';
 import 'package:job_application_tracker/shared/error_message.dart';
@@ -20,6 +19,7 @@ import 'package:job_application_tracker/shared/widgets/empty_state.dart';
 import 'package:job_application_tracker/shared/widgets/max_width_content.dart';
 import 'package:job_application_tracker/shared/widgets/section_header.dart';
 import 'package:job_application_tracker/shared/widgets/stat_tile.dart';
+import 'package:job_application_tracker/shared/widgets/status_breakdown.dart';
 import 'package:job_application_tracker/shared/widgets/status_chip.dart';
 
 /// What needs attention now: key numbers, upcoming interviews and deadlines,
@@ -97,7 +97,7 @@ class _DashboardBody extends ConsumerWidget {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
-              child: PipelineBar(counts: summary.statusCounts),
+              child: StatusBreakdown(counts: summary.statusCounts),
             ),
           ),
           if (activity.isNotEmpty) ...[

@@ -107,6 +107,17 @@ class ApplicationRepository {
     return query.watch().map((rows) => rows.map(_toStatusChange).toList());
   }
 
+  /// Every status change of every application, oldest first. Analytics use
+  /// it to tell which stages an application ever reached.
+  Stream<List<StatusChange>> watchAllStatusHistory() {
+    final query = _db.select(_db.statusHistory)
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.changedAt),
+        (t) => OrderingTerm.asc(t.id),
+      ]);
+    return query.watch().map((rows) => rows.map(_toStatusChange).toList());
+  }
+
   /// The latest status changes across all applications, newest first.
   Stream<List<RecentStatusChange>> watchRecentActivity({int limit = 5}) {
     final history = _db.statusHistory;
