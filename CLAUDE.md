@@ -21,7 +21,7 @@ tests matter as much as features.
 | UI | Material 3 (`ColorScheme.fromSeed`), custom design tokens |
 | State management / DI | `flutter_riverpod` 3.x — **no code generation** |
 | Navigation | `go_router` (`StatefulShellRoute.indexedStack`) |
-| Database | SQLite via `drift` + `drift_flutter` *(added in Phase 3)* |
+| Database | SQLite via `drift` + `drift_flutter` (native SQLite bundled by `sqlite3` build hooks) |
 | Charts | `fl_chart` *(Phase 8)* |
 
 Add a dependency only in the phase that needs it, and justify it.
@@ -58,24 +58,31 @@ lib/
 │   ├── router/               # app_router.dart (AppRoutes constants + GoRouter provider)
 │   ├── theme/                # design_tokens, app_colors, status_colors, app_typography,
 │   │                         # app_theme, theme_context (BuildContext extensions)
-│   └── utils/                # formatters, extensions
+│   └── utils/                # clock, date_only, strings (pure Dart helpers)
 ├── data/
-│   ├── database/             # Drift database, tables, migrations, *.g.dart
-│   └── repositories/         # one repository per aggregate
+│   ├── database/             # app_database.dart, tables.dart, app_database.g.dart
+│   ├── repositories/         # application, interview, checklist, note repositories
+│   └── seed/                 # DemoDataSeeder (fictional demo data, debug only)
 ├── domain/
-│   ├── models/               # immutable domain models
+│   ├── errors.dart           # ValidationException, NotFoundException
+│   ├── models/               # immutable domain models + drafts (create/update input)
 │   ├── enums/                # ApplicationStatus, WorkMode, EmploymentType, ...
 │   └── services/             # analytics_service, query/filter specs
-├── providers/                # app-wide providers: database, repositories, theme mode
+├── providers/                # app-wide providers: data_providers (db, clock, repos), theme mode
 ├── features/                 # UI per feature: <feature>_screen.dart, widgets/, controllers
 │   ├── shell/  dashboard/  applications/  interviews/  analytics/  settings/
 └── shared/widgets/           # reusable widgets (EmptyState, SectionHeader, StatusChip, ...)
 
 test/
-├── helpers/                  # pump_app.dart, fakes, fixtures
+├── helpers/                  # pump_app.dart, test_database.dart (in-memory db, FakeClock)
 ├── unit/                     # services, domain, providers, theme
-├── data/                     # repository tests (in-memory Drift)
+├── data/                     # database + repository tests (in-memory Drift)
+├── drift/                    # generated migration tests (from schema v2 onwards)
 └── widget/                   # screen / flow tests
+
+integration_test/             # on-device tests (real SQLite): run on simulator/emulator
+drift_schemas/                # committed schema dumps, one JSON per schemaVersion
+build.yaml                    # drift_dev options
 ```
 
 Feature-specific providers/controllers live in that feature's folder.
@@ -94,7 +101,7 @@ App-wide providers live in `lib/providers/`.
 - No `print`; no ignored futures (`unawaited(...)` when intentional).
 - Comments explain *why*, not *what*. No commented-out code.
 
-## Database rules (Phase 3+)
+## Database rules
 
 Tables: `applications`, `status_history`, `interviews`, `checklist_items`, `notes`.
 All child tables reference `applications.id` with `ON DELETE CASCADE`;
@@ -102,15 +109,26 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 
 - Primary keys: `INTEGER` autoincrement.
 - Enable `PRAGMA foreign_keys = ON` in `beforeOpen`.
-- Store enums as **TEXT (enum name)**, never the index.
-- Store timestamps in **UTC**. Date-only fields (deadline) are normalized to midnight.
+- Store enums as **TEXT** via `textEnum<T>()` (the Dart name, e.g. `technicalTest`), never the index.
+  Renaming an enum value requires a migration.
+- DateTimes are stored as ISO-8601 text (`store_date_time_values_as_text`).
+  Timestamps are written in **UTC** (`.toUtc()`); read values are UTC — call `toLocal()` only for display.
+- Date-only fields (`applied_at`, `deadline_at`) are **UTC midnight of the calendar date**
+  (`DateTime.toDateOnly()` in `core/utils/date_only.dart`). Never call `toLocal()` on them.
 - Money: integers (`salary_min`, `salary_max`) + `salary_currency` (default `IDR`) + `salary_period`. Never `double`.
 - A status change is **one transaction**: update `applications.status` + `updated_at`,
   insert a `status_history` row, and set `applied_at` the first time the status leaves `saved`.
-- `created_at` / `updated_at` are set by repositories, not the UI.
+- `created_at` / `updated_at` are set by repositories (with the injected `Clock`), not the UI.
+- Drift row classes are suffixed `Row` (`ApplicationRow`); repositories map them to domain
+  models and never expose them.
+- Repository methods validate input and throw `ValidationException` / `NotFoundException`.
+  Mutation methods are `async`, so errors always arrive through the returned `Future`.
+- Text is trimmed; blank optional text is stored as `NULL`.
 - SQL and Drift APIs are only used inside `lib/data/`.
-- Any schema change: bump `schemaVersion`, write a migration, keep a schema dump,
-  and add a migration test. Never edit a released migration.
+- Any schema change: edit `tables.dart`, bump `schemaVersion`, run build_runner, then
+  `dart run drift_dev make-migrations` (writes the schema dump, step-by-step helpers and
+  migration tests), implement `onUpgrade`, and make the generated tests pass.
+  Never edit a released migration.
 - Generated `*.g.dart` files **are committed** so the project runs without build_runner.
 
 ### Metric definitions (analytics)
@@ -157,7 +175,12 @@ All child tables reference `applications.id` with `ON DELETE CASCADE`;
 
 - Every phase adds tests with the feature, not afterwards.
 - `domain/services`: unit tests covering edge cases (empty data, zero denominators).
-- Repositories: tests against an in-memory Drift database.
+- Repositories: tests against an in-memory Drift database (`createTestDatabase()`),
+  with `FakeClock` for timestamps.
+- Test stream behaviour with one long-lived subscription; don't assume the initial
+  query emits before a write.
+- `integration_test/` covers what only a device can prove (native SQLite, file database).
+  It must only touch records it creates.
 - Screens: widget tests for the main flows, using `test/helpers/pump_app.dart`.
 - Tests must not depend on the real clock; inject time where needed.
 - `flutter analyze` and `flutter test` must pass before any commit.
@@ -169,8 +192,10 @@ flutter pub get
 dart format lib test
 flutter analyze
 flutter test
-dart run build_runner build --delete-conflicting-outputs   # after changing Drift tables (Phase 3+)
-flutter run                                                # pick an iOS simulator or Android emulator
+dart run build_runner build                 # after changing Drift tables
+dart run drift_dev make-migrations          # after bumping schemaVersion
+flutter test integration_test -d <device>   # on-device database smoke test
+flutter run                                 # pick an iOS simulator or Android emulator
 flutter build apk --debug
 flutter build ios --simulator --debug
 ```
@@ -185,8 +210,8 @@ flutter build ios --simulator --debug
 |---|---|---|
 | 1 | Audit & planning | ✅ |
 | 2 | Foundation: cleanup, IDs, lints, Riverpod, GoRouter, theme/tokens, shell, tests | ✅ |
-| 3 | Data layer: Drift, tables, migrations, models, repositories, seed data | ⏳ |
-| 4 | Applications CRUD + status change | |
+| 3 | Data layer: Drift, tables, migrations, models, repositories, seed data | ✅ |
+| 4 | Applications CRUD + status change | ⏳ |
 | 5 | Search, filter, sort | |
 | 6 | Interviews, checklist, notes, status timeline | |
 | 7 | Dashboard | |
